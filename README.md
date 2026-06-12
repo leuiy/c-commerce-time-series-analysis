@@ -4,13 +4,10 @@
 ---
 
 ## Live Reports / 분석 결과
-https://leuiy.github.io/c-commerce-time-series-analysis/c-commerce_main/c-commerce_main.html
-
-https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/2014~2021.html
-
-https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/2022~2025.html
-
-https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/2022~2026Q1.html
+- [Full Period Analysis (2014–2026 Q1)](https://leuiy.github.io/c-commerce-time-series-analysis/c-commerce_main/c-commerce_main.html)
+- [Sub-period: 2014–2021](https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/2014~2021.html)
+- [Sub-period: 2022–2025](https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/2022~2025.html)
+- [Sub-period: 2022–2026 Q1](https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/2022~2026Q1.html)
 
 ---
 ## English
