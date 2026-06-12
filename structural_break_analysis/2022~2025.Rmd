@@ -1,5 +1,5 @@
 ---
-title: "해외 온라인쇼핑 직접구매액 시계열 분석"
+title: "22-25"
 author: ""
 date: "`r Sys.Date()`"
 output: html_document
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ## 0. 데이터 불러오기
 
 ```{r}
-back <- read.csv("E:/26-1 수업/시계열/2차 피드백 발표/shop_back - 복사본 (2).csv")
+back <- read.csv("shop_back2.csv")
 colnames(back) <- c("quarter", "total", "china")
 tail(back)
 back$total <- as.numeric(gsub(",", "", back$total))
