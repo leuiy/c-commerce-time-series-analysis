@@ -1,4 +1,4 @@
-# Is C-Commerce Growth Temporary or a Market Restructuring?
+# C-Commerce and the Restructuring of Korea's Cross-Border E-Commerce Market: A SARIMA-Based Structural Break Analysis
 🇺🇸 [English](#english) | 🇰🇷 [한국어](#한국어)
 
 ---
