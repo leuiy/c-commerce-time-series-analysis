@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 ```{r}
 library(readxl)
-shop <- read_excel("E:/26-1 수업/시계열/논문/최종/shop.xlsx", sheet = "데이터")
+shop <- read_excel("shop.xlsx", sheet = "데이터")
 colnames(shop) <- c("quarter", "total", "china")
 head(shop)
 ```
