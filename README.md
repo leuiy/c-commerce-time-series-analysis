@@ -3,6 +3,13 @@
 
 ---
 
+## Live Reports / 분석 결과
+- [Full Period Analysis (2014–2026 Q1)](https://leuiy.github.io/c-commerce-time-series-analysis/시계열_최종_html.html)
+- [Sub-period: 2014–2021](https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/14-21.html)
+- [Sub-period: 2022–2025](https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/22-25.html)
+- [Sub-period: 2022–2026 Q1](https://leuiy.github.io/c-commerce-time-series-analysis/structural_break_analysis/22-26.html)
+
+---
 ## English
 
 ## Total Cross-Border Purchases → China-Origin Purchases → China's Market Share → Structural Dominance Diagnosis
