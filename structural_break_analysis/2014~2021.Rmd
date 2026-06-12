@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## 0. 데이터 불러오기
 library(readr)
-shop_plus <-read_csv("E:/26-1 수업/시계열/2차 피드백 발표/shop_plus(앞시점).csv")
+shop_plus <-read_csv("shop_plus(앞시점).csv")
 
 colnames(shop_plus) <- c("quarter", "total", "china")
 head(shop_plus)
