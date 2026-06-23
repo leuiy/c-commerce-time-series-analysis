@@ -1,0 +1,302 @@
+---
+title: "2014~2021"
+output: html_document
+date: "2026-06-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+## 0. 데이터 불러오기
+library(readr)
+shop_plus <-read_csv("E:/26-1 수업/시계열/2차 피드백 발표/shop_plus(앞시점).csv")
+
+colnames(shop_plus) <- c("quarter", "total", "china")
+head(shop_plus)
+str(shop_plus)
+attach(shop_plus)
+
+## 1. 시계열 데이터로 변경
+
+ts_shop_plus <- ts(
+  shop_plus[, c("total", "china")],
+  start = c(2014, 1),
+  frequency = 4
+)
+
+ts_shop_plus
+class(ts_shop_plus)
+plot(ts_shop_plus, main = "해외 온라인쇼핑 직접구매액")
+ts.plot(ts_shop_plus, 
+        col = c("blue", "red"),
+        lty = c(1, 2),          
+        main = "해외 온라인쇼핑 직접구매액")
+
+legend("topleft", 
+       legend = c("total", "china"), 
+       col = c("blue", "red"), 
+       lty = c(1, 2))
+
+total <- ts_shop_plus[,1]
+china <- ts_shop_plus[,2]
+
+library(dplyr) 
+library(forecast) 
+library(ggplot2) 
+library(lmtest)
+
+## 2. 원시데이터 ACF, PACF, 단위근 검정
+### 2-1. 차분 전 ACF/PACF
+
+# total
+par(mfrow = c(1, 2))
+acf(total, main = 'acf(total) - 차분 전')
+pacf(total, main = 'pacf(total) - 차분 전')
+par(mfrow = c(1, 1))
+
+# china
+par(mfrow = c(1, 2))
+acf(china, main = 'acf(china) - 차분 전')
+pacf(china, main = 'pacf(china) - 차분 전')
+par(mfrow = c(1, 1))
+
+### 2-2. 단위근 검정 (ADF, KPSS)
+library(tseries)
+adf.test(total)
+adf.test(china)
+kpss.test(total)
+kpss.test(china)
+
+## 3. 시계열 분해
+### 3-1. 가법/승법 결정 (잔차 CV 비교)
+
+# total
+decomp_add <- decompose(total, type = "additive")
+decomp_mul <- decompose(total, type = "multiplicative")
+sd(decomp_add$random, na.rm = TRUE) / mean(total)
+sd(decomp_mul$random, na.rm= TRUE)
+
+# china
+decomp_add <- decompose(china, type = "additive")
+decomp_mul <- decompose(china, type = "multiplicative")
+sd(decomp_add$random, na.rm = TRUE) / mean(china)
+sd(decomp_mul$random, na.rm = TRUE)
+
+### 3-2. 가법 분해 (decompose)
+# total
+de_total = decompose(total, type = c('additive')) 
+plot(de_total)
+title(main = 'total_분해')
+
+# china
+de_china = decompose(china, type = c('additive')) 
+plot(de_china)
+title(main = 'china_분해')
+
+## 4. 차분 및 정상성 확인
+### 4-1. total: 1차 차분 + 계절 차분
+
+diff_season <- diff(diff(total), lag = 4)
+adf.test(diff_season)
+kpss.test(diff_season)
+
+par(mfrow = c(1, 2))
+acf(diff_season, main = "ACF(total) - 차분 후")
+pacf(diff_season, main = "PACF(total) - 차분 후")
+par(mfrow = c(1, 1))
+
+### 4-2. china: 1차 차분 + 계절 차분
+diff_season2 <- diff(diff(china), lag = 4)
+diff_season3 <- diff(diff_season2)
+adf.test(diff_season2)
+adf.test(diff_season3)
+kpss.test(diff_season3)
+
+par(mfrow = c(1, 2))
+acf(diff_season2, main = "ACF2(china) - 차분 후")
+pacf(diff_season2, main = "PACF2(china) - 차분 후")
+par(mfrow = c(1, 1))
+
+
+### 4-3. 차분 방법 비교 (2차차분 vs 1차+계절차분)
+kpss.test(diff(diff(total)))
+var(diff(diff(total)))
+var(diff_season)
+
+## 5. 모형 결정
+### 5-1. 후보 모형 적합 및 모수 유의성 검정
+auto.arima(total)
+auto.arima(china)
+total_1 <- arima(total, order=c(0,1,1), seasonal=list(order=c(0,1,1), period=4))
+coeftest(total_1)
+total_2 <- arima(total, order=c(0,1,0), seasonal=list(order=c(0,1,1), period=4))
+
+china_1 <- arima(china, order=c(0,1,1), seasonal=list(order=c(0,1,0), period=4))
+coeftest(china_1)
+china_2 <- arima(china, order=c(0,1,0), seasonal=list(order=c(0,1,0), period=4))
+
+### 5-2. auto.arima 탐색
+auto.arima(total)
+auto.arima(china)
+
+### 5-3. 최종 모형 선택
+
+total_fit <- arima(total, order=c(0,1,0), seasonal=list(order=c(0,1,1), period=4))
+china_fit <- arima(china, order=c(0,1,0), seasonal=list(order=c(0,1,0), period=4))
+
+## 6. 잔차 진단
+### 6-1. total 잔차 진단
+
+ts.plot(resid(total_fit))
+abline(h=0)
+library(astsa)
+acf2(resid(total_fit)) 
+qqnorm(resid(total_fit)) 
+qqline(resid(total_fit))
+
+### 6-2. china 잔차 진단
+
+ts.plot(resid(china_fit))
+abline(h=0)
+acf2(resid(china_fit)) 
+qqnorm(resid(china_fit)) 
+qqline(resid(china_fit)) 
+
+
+china_alt <- arima(china, order=c(0,1,0), seasonal=list(order=c(0,1,1), period=4))
+coeftest(china_alt)
+for(lag in c(5,6,12,18)) print(Box.test(resid(china_alt), lag=lag, type="Ljung-Box", fitdf=1))
+AIC(china_2, china_alt)
+
+### 6-3. Ljung-Box 검정
+library(portes)
+LjungBox(total_fit)
+LjungBox(china_fit)
+
+### 6-4. 이상치 확인
+# total
+res_total <- residuals(total_fit)
+std_total <- (res_total - mean(res_total)) / sd(res_total)
+out_total <- which(abs(std_total) > 2.5)
+time(std_total)[out_total]
+
+# china
+res_china <- residuals(china_fit)
+std_china <- (res_china- mean(res_china)) / sd(res_china)
+out_china <- which(abs(std_china) > 2.5)
+time(std_china)[out_china]
+
+## 7. 예측
+### 7-1. total, china 예측
+
+library(forecast) 
+(p_total = forecast(total_fit, h=20))
+plot(p_total) 
+(p_china = forecast(china_alt, h=20))
+plot(p_china) 
+
+### 7-2. 적합값 비교 시각화
+pred_total <- forecast(total_fit, h=12)
+pred_china <- forecast(china_alt, h=12)
+
+ylim_range <- range(total, china, fitted(total_fit), fitted(china_alt))
+
+plot(total, main="total vs china 적합값 비교", ylab="", col="gray", ylim=ylim_range)
+lines(china, col="gray", lty=2)
+lines(fitted(total_fit), col="blue")
+lines(fitted(china_alt), col="red")
+## 8. 점유율 분석 (share = china / total)
+### 8-1. 점유율 시계열 생성 및 변환 검토
+
+shop_plus$share <- shop_plus$china / shop_plus$total
+share <- ts(shop_plus$share, start = c(2014, 1), frequency = 4)
+plot(share, main='중국의 해외직접구매 점유율')
+
+BoxCox.lambda(share)
+
+### 8-2. 차분 전 ACF/PACF 및 단위근 검정
+
+par(mfrow = c(1, 2))
+acf(share, main = "ACF - 차분 전 (share)")
+pacf(share, main = "PACF - 차분 전 (share)")
+par(mfrow = c(1, 1))
+
+adf.test(share)
+kpss.test(share)
+
+### 8-3. 분해 (decompose)
+
+de_share = decompose(share, type = c('additive')) 
+plot(de_share)
+title(main = 'share_분해')
+
+de_share2 = decompose(share, type = c('multiplicative')) 
+plot(de_share2)
+
+
+### 8-4. 차분 및 정상성 확인
+
+diff_share <- diff(diff(share), lag = 4)
+adf.test(diff_share)
+kpss.test(diff_share)
+
+par(mfrow = c(1, 2))
+acf(diff_share, main = "ACF - 차분 후 (share)")
+pacf(diff_share, main = "PACF - 차분 후 (share)")
+par(mfrow = c(1, 1))
+
+### 8-5. 후보 모형 적합 및 선택
+share_1 <- arima(share, order = c(0,1,1), seasonal = list(order = c(1,1,1), period = 4))
+coeftest(share_1)
+
+share_2 <- arima(share, order = c(0,1,1), seasonal = list(order = c(0,1,1), period = 4))
+share_3 <- arima(share, order=c(1,1,0), seasonal=list(order=c(0,1,1), period=4))
+
+AIC(share_1, share_2,share_3)
+BIC(share_1, share_2, share_3)
+
+auto.arima(share)
+coeftest(share_3)
+share_fit <- arima(share, order = c(0,1,0), seasonal = list(order = c(0,1,1), period = 4))
+coeftest(share_fit)
+
+### 8-6. 적합값 시각화
+
+fitted(share_fit)[1:8]
+ylim_range <- range(share, fitted(share_fit))
+plot(share, col="black", main="share 적합값", ylab="점유율")
+lines(fitted(share_fit), col="green")
+legend("bottomright", legend=c("실제값","적합값"), col=c("black","green"), lty=1)
+
+### 8-7. 잔차 진단
+
+ts.plot(resid(share_fit))
+abline(h = 0)
+qqnorm(resid(share_fit))
+qqline(resid(share_fit))
+LjungBox(share_fit)
+acf2(resid(share_fit))
+
+res_share <- residuals(share_fit)
+std_share <- (res_share - mean(res_share)) / sd(res_share)
+outlier_idx <- which(abs(std_share) > 2.5)
+time(std_share)[outlier_idx]
+
+### 8-8. 예측 및 임계점 돌파 시점
+p_share <- forecast(share_fit, h=12)
+
+plot(share, main="중국 직구 점유율 예측",
+     ylab="점유율", xlim=c(2014,2024), ylim=c(0,1))
+lines(ts(p_share$mean, start=c(2022,1), frequency=4), col="blue")
+lines(ts(p_share$upper[,1], start=c(2022,1), frequency=4), col="blue", lty=2)
+lines(ts(p_share$lower[,1], start=c(2022,1), frequency=4), col="blue", lty=2)
+abline(h=0.6, col="red", lty=2)
+
+
+time(p_share$mean)[which(p_share$mean >= 0.6)[1]]
+# 70% 임계점 최초 돌파 시점
+time(p_share$mean)[which(p_share$mean >= 0.6)[1]]
+```
